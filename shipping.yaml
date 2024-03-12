@@ -1,0 +1,86 @@
+- name: This playbook is to install maven
+  hosts: shipping
+  become: true 
+  tasks:
+  - name: This task is to install maven
+    ansible.builtin.yum:
+      name: maven
+      state: latest
+  
+  - name: This task is to check roboshop user exists or not 
+    ansible.builtin.command: id roboshop
+    register: out 
+    ignore_errors: true
+
+  - name: Install roboshop user if it doesnt exists
+    ansible.builtin.user:
+      name: roboshop
+    when: out.rc != 0
+  
+  - name: check /app directory exists or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+  
+  - name: Print directory status
+    ansible.builtin.debug:
+      msg: output is :{{directory}}
+  
+  - name: create an app directory 
+    ansible.builtin.file:
+      path: /app
+      state: directory
+    when: directory.stat.exists == False
+
+  - name: Download the application code to created app directory.
+    ansible.builtin.get_url:
+      url: https://roboshop-builds.s3.amazonaws.com/shipping.zip
+      dest: /tmp/shipping.zip
+
+  - name: unzip the files
+    ansible.builtin.unarchive:
+      src: /tmp/shipping.zip
+      dest: /app
+      remote_src: yes
+
+  - name: maven package
+    ansible.builtin.command: mvn clean package
+    args:
+      chdir: /app
+
+  - name: rename jar file
+    ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar
+    args:
+      chdir: /app
+
+  - name: This task is to copy the catalogue service
+    ansible.builtin.copy:
+      src: shipping.service
+      dest: /etc/systemd/system/shipping.service
+
+  - name: Load the service.
+    ansible.builtin.systemd_service:
+      daemon_reload: true
+
+  - name: This task is to install mysql
+    ansible.builtin.yum:
+      name: mysql
+      state: latest
+
+  - name: This task is to Load Schema
+    ansible.builtin.shell: "mysql -h mysql.padmasrikanth.shop -uroot -pRoboShop@1 < /app/schema/shipping.sql"
+
+  - name: This task is to restart shipping
+    ansible.builtin.service:
+      name: shipping
+      state: restarted
+      enabled: true    
+  
+
+
+  
+
+  
+
+  
+  
