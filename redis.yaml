@@ -1,0 +1,28 @@
+- name: This playbook is to install redis 
+  hosts: redis
+  become: yes 
+  tasks:
+  - name: This task is to install  repo file as a rpm
+    ansible.builtin.yum:
+      name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+      state: latest
+  
+  - name: This task is to enable Redis 6.2 from package streams
+    ansible.builtin.command: yum module enable redis:remi-6.2 -y
+
+  - name: This task is to Install Redis
+    ansible.builtin.yum:
+      name: redis
+      state: latest
+  
+  - name: This task is to replace /etc/redis.conf file
+    ansible.builtin.replace:
+      path: /etc/redis.conf
+      regexp: '127.0.0.1'
+      replace: '0.0.0.0'
+  
+  - name: This task is to Start & Enable Redis Service
+    ansible.builtin.service:
+      name: redis
+      state: started
+      enabled: yes

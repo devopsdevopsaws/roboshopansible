@@ -4,3 +4,8 @@ mongodb.padmasrikanth.shop
 [catalogue]
 catalogue.padmasrikanth.shop
 
+[redis]
+redis.padmasrikanth.shop
+
+
+
