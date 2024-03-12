@@ -1,0 +1,30 @@
+- name: This playbook is to install catalogue module
+  hosts: catalogue
+  become: yes
+  tasks:
+  - name: This task is to Setup NodeJS repos. 
+    ansible.builtin.shell: "curl -sL https://rpm.nodesource.com/setup_lts.x | bash"
+  
+  - name: This task is to Install NodeJS
+    ansible.builtin.yum:
+      name: nodejs
+      state: latest
+
+  - name: This task is to check roboshop user exists or not 
+    ansible.builtin.command: id roboshop
+    register: out 
+    ignore_errors: true
+
+  - name: Install roboshop user if it doesnt exists
+    ansible.builtin.user:
+      name: roboshop
+    when: out.rc != 0
+  
+  - name: check /app directory exists or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+  
+  - name: Print directory status
+    ansible.builtin.debug:
+      msg: output is :{{directory}}
