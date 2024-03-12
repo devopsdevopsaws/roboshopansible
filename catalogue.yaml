@@ -58,15 +58,26 @@
   
   - name: Load the service.
     ansible.builtin.systemd_service:
-      daemon_reload: true
+      daemon_reload: true  
+
+  - name: This task is to copy the mongo.repo
+    ansible.builtin.copy:
+      src: mongo.repo
+      dest: /etc/yum.repos.d/mongo.repo
   
+  - name: This task is to Install mongodb-org-shell
+    ansible.builtin.yum:
+      name: mongodb-org-shell
+      state: latest
+
+  - name: This task is to load schema 
+    ansible.builtin.shell: "mongo --host MONGODB-SERVER-IPADDRESS </app/schema/catalogue.js"
+
   - name: This task is to Start & Enable catalogue Service
     ansible.builtin.service:
       name: catalogue
-      state: started
+      state: restarted
       enabled: yes
-  
-
 
 
   
