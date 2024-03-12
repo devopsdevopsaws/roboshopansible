@@ -1,0 +1,25 @@
+- name: This playbook is to install mysql
+  hosts: mysql
+  become: true 
+  tasks:
+  - name: This task is to disable mysql
+    ansible.builtin.command: yum module disable mysql -y
+  
+  - name: This task is to copy the mysql repo
+    ansible.builtin.copy:
+      src: mysql.repo
+      dest: /etc/yum.repos.d/mysql.repo
+
+  - name: This task is to Install MySQL Server
+    ansible.builtin.yum:
+      name: mysql-community-server
+      state: latest
+  
+  - name: This task is to Start & Enable mysql Service
+    ansible.builtin.service:
+      name: mysqld
+      state: started
+      enabled: yes
+
+  - name: This is to load mysql schema
+    ansible.builtin.shell: "mysql_secure_installation --set-root-pass RoboShop@1"
