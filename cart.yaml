@@ -1,0 +1,67 @@
+- name: This playbook is to install cart module
+  hosts: cart
+  become: yes
+  tasks:
+  - name: This task is to Setup NodeJS repos. 
+    ansible.builtin.shell: "curl -sL https://rpm.nodesource.com/setup_lts.x | bash"
+  
+  - name: This task is to Install NodeJS
+    ansible.builtin.yum:
+      name: nodejs
+      state: latest
+
+  - name: This task is to check roboshop user exists or not 
+    ansible.builtin.command: id roboshop
+    register: out 
+    ignore_errors: true
+
+  - name: Install roboshop user if it doesnt exists
+    ansible.builtin.user:
+      name: roboshop
+    when: out.rc != 0
+  
+  - name: check /app directory exists or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+  
+  - name: Print directory status
+    ansible.builtin.debug:
+      msg: output is :{{directory}}
+  
+  - name: create an app directory 
+    ansible.builtin.file:
+      path: /app
+      state: directory
+    when: directory.stat.exists == False
+
+  - name: Download the application code to created app directory.
+    ansible.builtin.get_url:
+      url: https://roboshop-builds.s3.amazonaws.com/cart.zip
+      dest: /tmp/cart.zip
+  
+  - name: unzip the files
+    ansible.builtin.unarchive:
+      src: /tmp/cart.zip
+      dest: /app
+      remote_src: yes
+
+  - name: This task is to install dependeices
+    ansible.builtin.command: npm install
+    args:
+      chdir: /app
+
+  - name: This task is to copy the cart service
+    ansible.builtin.copy:
+      src: cart.service
+      dest: /etc/systemd/system/cart.service
+  
+  - name: Load the service.
+    ansible.builtin.systemd_service:
+      daemon_reload: true  
+
+  - name: This task is to Start & Enable cart Service
+    ansible.builtin.service:
+      name: cart
+      state: restarted
+      enabled: yes

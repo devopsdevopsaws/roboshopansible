@@ -10,4 +10,7 @@ redis.padmasrikanth.shop
 [user]
 user.padmasrikanth.shop
 
+[cart]
+cart.padmasrikanth.shop
+
 
