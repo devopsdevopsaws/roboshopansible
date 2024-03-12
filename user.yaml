@@ -1,0 +1,80 @@
+- name: This playbook is to install the user module
+  hosts: user
+  become: yes
+  tasks:
+  - name: This task is to setup Setup NodeJS repos
+    ansible.builtin.shell: "curl -sL https://rpm.nodesource.com/setup_lts.x | bash"
+  
+  - name: This task is to Install NodeJS
+    ansible.builtin.yum:
+      name: nodejs
+      state: latest
+
+  - name: This task is to check roboshop user exists or not 
+    ansible.builtin.command: id roboshop
+    register: out 
+    ignore_errors: true
+
+  - name: Install roboshop user if it doesnt exists
+    ansible.builtin.user:
+      name: roboshop
+    when: out.rc != 0
+  
+  - name: check /app directory exists or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+  
+  - name: Print directory status
+    ansible.builtin.debug:
+      msg: output is :{{directory}}
+  
+  - name: create an app directory 
+    ansible.builtin.file:
+      path: /app
+      state: directory
+    when: directory.stat.exists == False
+
+  - name: Download the application code to created app directory.
+    ansible.builtin.get_url:
+      url: https://roboshop-builds.s3.amazonaws.com/user.zip
+      dest: /tmp/user.zip
+
+  - name: unzip the files
+    ansible.builtin.unarchive:
+      src: /tmp/user.zip
+      dest: /app
+      remote_src: yes
+
+  - name: This task is to install dependeices
+    ansible.builtin.command: npm install
+    args:
+      chdir: /app
+      
+  - name: This task is to copy the user service
+    ansible.builtin.copy:
+      src: user.service
+      dest: /etc/systemd/system/user.service
+
+  - name: Load the service.
+    ansible.builtin.systemd_service:
+      daemon_reload: true 
+  
+  - name: This task is to copy the mongo.repo
+    ansible.builtin.copy:
+      src: mongo.repo
+      dest: /etc/yum.repos.d/mongo.repo
+  
+  - name: This task is to Install mongodb-org-shell
+    ansible.builtin.yum:
+      name: mongodb-org-shell
+      state: latest
+
+  - name: This task is to load schema 
+    ansible.builtin.shell: "mongo --host mongodb.padmasrikanth.shop </app/schema/user.js"
+
+  - name: This task is to Start & Enable catalogue Service
+    ansible.builtin.service:
+      name: user
+      state: restarted
+      enabled: yes
