@@ -1,0 +1,31 @@
+- name: This play book is to install mongodb 
+  hosts: mongodb
+  become: true 
+  tasks: 
+  - name: This task is to copy the mongo repo
+    ansible.builtin.copy:
+      src: mongo.repo
+      dest: /etc/yum.repos.d/mongo.repo
+ 
+  - name: This task is to Install MongoDB
+    ansible.builtin.yum:
+      name: mongodb-org
+      state: latest
+  
+  - name: This task is to Start & Enable MongoDB Service
+    ansible.builtin.service:
+      name: mongod
+      state: started
+      enabled: yes
+  
+  - name: Replace /etc/mongod.conf
+    ansible.builtin.replace:
+      path: /etc/mongod.conf
+      regexp: '127.0.0.1'
+      replace: '0.0.0.0'
+ 
+  - name: Restart mongod serivce
+    ansible.builtin.service:
+      name: mongod
+      state: restarted
+  
