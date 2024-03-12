@@ -71,7 +71,7 @@
       state: latest
 
   - name: This task is to load schema 
-    ansible.builtin.shell: "mongo --host MONGODB-SERVER-IPADDRESS </app/schema/catalogue.js"
+    ansible.builtin.shell: "mongo --host mongodb.padmasrikanth.shop </app/schema/catalogue.js"
 
   - name: This task is to Start & Enable catalogue Service
     ansible.builtin.service:
