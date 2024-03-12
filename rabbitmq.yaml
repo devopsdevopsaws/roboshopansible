@@ -1,0 +1,28 @@
+- name: This playbook is to install rabbitmq
+  hosts: rabbitmq
+  become: true 
+  tasks:
+  - name: This task is to install Configure YUM Repos from the script provided by vendor.
+    ansible.builtin.shell: "{{item}}"
+    loop:
+    - "curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | bash"
+    - "curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | bash"
+
+  - name: This task is to Install RabbitMQ
+    ansible.builtin.yum:
+      name: rabbitmq-server
+      state: latest
+
+  - name: This task is to Start & Enable rabbitmq-server Service
+    ansible.builtin.service:
+      name: rabbitmq-server
+      state: started
+      enabled: yes
+  
+  - name: create rabbitmq user
+    ansible.builtin.shell: rabbitmqctl add_user roboshop roboshop123
+
+  - name: setup permissions
+    ansible.builtin.shell: rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*"
+
+  

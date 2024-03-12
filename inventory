@@ -19,6 +19,9 @@ mysql.padmasrikanth.shop
 [shipping]
 shipping.padmasrikanth.shop
 
+[rabbitmq]
+rabbitmq.padmasrikanth.shop
+
 
 
 
